@@ -125,8 +125,8 @@ public class GoFish
 
     private final Scanner scanner ;
 
-    private final Deck deck;
-    private final Stock stock ;
+    private Deck deck;
+    private  Stock stock ;
     private final List<DiscardPile> pointPiles ;
 
     private boolean running = false ;
@@ -194,7 +194,276 @@ public class GoFish
     
     // Setup game
     private void setup() {
+        // we're not set up yet but we're on our way
+        this.running = true ;   // input methods will set this false based upon user input
         
+        
+        // configure the game components
+        
+        configurePlayers() ;
+    
+        if ( !this.running )
+        {
+        return ;
+        }
+        
+        configureCards() ;
+
+        if ( !this.running )
+            {
+            return ;
+            }
+        
+        dealHands();
     }
 
+    /**
+     * deal hands to all players
+     * 
+     * @since 2.0
+     */
+    private void dealHands()
+        {
+
+        // deal one card to each player in turn
+        for ( int i = 1 ; i <= 5 ; i++ )
+            {
+
+            for ( final Player aPlayer : this.players )
+                {
+                final Card dealt = this.stock.drawTopCard().hide() ;
+                aPlayer.dealtACard( dealt ) ;
+                }
+
+            }
+
+        }   // end dealHands()
+    
+    /**
+     * determine the number of decks, create them, and populate the stock from them
+     *
+     * @since 2.0
+     */
+    private void configureCards()
+        {
+        
+        // open the appropriate number of decks (no jokers) and put the cards into the stock
+        getCardsFromDeck() ;
+        
+        // shuffle the cards
+        this.stock.shuffle() ;
+
+        }   // end configureCards()
+    
+    /**
+     * populate stock from all playing cards (excludes jokers) from one or more decks
+     *
+     * @since 1.0
+     */
+    private void getCardsFromDeck()
+        {
+
+        // populate the stock from the deck
+
+        // NOTE we're determining the maximum # of cards per player based on the # of cards in all
+        // the decks
+        // NOTE alternative: determine minimum # of decks based upon the # of hands and # of
+        // cards/hand
+
+        final Card joker = new Card( JOKER ) ;    // for lookup
+
+        // 'open' a 'box' of cards
+        final Deck newDeck = new Deck() ;
+
+        // pull out the jokers
+        final Pile jokers = newDeck.removeAllMatchingCards( joker ) ;
+
+        // add the playing cards to the stock
+        this.stock.moveCardsToBottom( newDeck ) ;
+
+        // put the jokers back in the 'box'
+        newDeck.moveCardsToBottom( jokers ) ;
+
+        // turn the jokers face up
+        newDeck.revealAll() ;
+
+        // keep the 'box'
+        this.deck = newDeck ;
+
+        // assertion: each deck in this.decks have all cards that won't be used during game play
+
+        // assertion: this.stock contains all cards to be used during game play
+
+        }   // end getCardsFromDecks()
+    
+    /**
+     * determine the number of players and set up for play
+     * 
+     * @since 2.0
+     */
+    private void configurePlayers()
+        {
+
+        // find out how many players
+
+        do
+            {
+            this.numberOfPlayers = promptForInt( "How many players (minimum %,d)?",
+                                                 MINIMUM_PLAYER_COUNT ) ;
+
+            if ( !this.running )
+                {
+                return ;
+                }
+
+            }
+        while ( this.numberOfPlayers < MINIMUM_PLAYER_COUNT ) ;
+
+        
+        // create the players
+
+        for ( int i = 1 ; i <= this.numberOfPlayers ; i++ )
+            {
+            String playerName = promptForLine( String.format( "%nWhat is the name of player %,d?",
+                                                              i ) ) ;
+
+            if ( !this.running )
+                {
+                return ;
+                }
+
+            this.players.add( new Player( playerName ) ) ;
+            }
+        
+        }   // end configurePlayers()
+    
+    /**
+     * displays a formatted prompt
+     *
+     * @param prompt
+     *     the prompt with optional formatting specifiers
+     * @param arguments
+     *     argument(s) used by the formatting specifiers
+     *
+     * @since 1.0
+     */
+    private static void displayPrompt( final String prompt,
+                                       final Object... arguments )
+        {
+
+        System.out.printf( "%s ", String.format( prompt, arguments ) ) ;
+
+        }   // end displayPrompt()
+
+    /**
+     * prompts the user for a positive integer value greater than 0
+     *
+     * @param prompt
+     *     the prompt with optional formatting specifiers
+     * @param arguments
+     *     argument(s) used by the formatting specifiers
+     *
+     * @return the integer value as specified by the user or -1 if no more input is available
+     *
+     * @since 1.0
+     */
+    private int promptForInt( final String prompt,
+                              final Object... arguments )
+        {
+
+        do
+            {
+            displayPrompt( prompt, arguments ) ;
+
+            if ( this.scanner.hasNextInt() )    // have an int?
+                {
+                final int inputValue = this.scanner.nextInt() ;
+                
+                if ( inputValue > 0 )   // have an int, make sure it's positive
+                    {
+                    // clear out anything left in the scanner's buffer on the current line
+                    this.scanner.nextLine() ;
+                    
+                    return inputValue ;
+                    }
+                }
+
+            if ( !this.scanner.hasNext() )  // no more input available?
+                {
+                this.running = false ;
+
+                return -1 ;
+                }
+
+            // assertion: there's more input available but the next token isn't an int
+            
+            if ( ".".equals( this.scanner.next() ) )    // skip the noise
+                {
+                this.running = false ;
+                
+                return -1 ;
+                }
+            
+            }
+        while ( true ) ;    // try again
+
+        }   // end promptForInt()
+
+
+    /**
+     * prompts the user for a line of text
+     *
+     * @param prompt
+     *     the prompt with optional formatting specifiers
+     * @param arguments
+     *     argument(s) used by the formatting specifiers
+     *
+     * @return the non-empty line of text as specified by the user with leading and trailing
+     *     whitespace removed or null if no more input available
+     *
+     * @since 1.0
+     */
+    private String promptForLine( final String prompt,
+                                  final Object... arguments )
+        {
+
+        String response = "" ;
+        String compressedResponse = "" ;
+
+        do
+            {
+            displayPrompt( prompt, arguments ) ;
+
+            if ( !this.scanner.hasNextLine() )  // no more input available?
+                {
+                this.running = false ;
+
+                return null ;
+                }
+            
+
+            // get the line
+            response = this.scanner.nextLine().trim() ;
+
+            // make sure we got something other than whitespace
+            compressedResponse = response.replace( " ", "" )
+                                         .replace( "\t", "" ) ;
+            
+            // quit?
+            if ( ".".equals( compressedResponse ) )
+                {
+                this.running = false ;
+
+                return null ;
+                }
+            
+            }
+        while ( "".equals( compressedResponse ) ) ;
+
+        // assertion: we have the user's trimmed input (no leading or trailing whitespace
+        
+        return response ;
+
+        }   // end promptForLine()
+    
     }   // end class TopThis
