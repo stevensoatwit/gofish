@@ -111,7 +111,7 @@ public class GoFish
     private final static int MINIMUM_NUMBER_OF_DECKS = 1 ;
 
     /** can't play with fewer than this many players at an absolute minimum */
-    private final static int MINIMUM_PLAYER_COUNT = 3 ;
+    private final static int MINIMUM_PLAYER_COUNT = 2 ;
     
 
     /*
@@ -187,6 +187,7 @@ public class GoFish
                 final GoFish goFish = new GoFish( input );
                 
                 goFish.setup();
+                goFish.players.get(0).hasPairs();
             
             }   // end try (input)
 
@@ -251,7 +252,7 @@ public class GoFish
         getCardsFromDeck() ;
         
         // shuffle the cards
-        this.stock.shuffle() ;
+        //this.stock.shuffle() ;
 
         }   // end configureCards()
     

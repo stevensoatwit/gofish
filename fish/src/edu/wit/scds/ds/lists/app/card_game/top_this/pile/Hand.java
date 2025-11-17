@@ -84,7 +84,6 @@ public class Hand extends Pile
      * public methods
      */
 
-
     /**
      * retrieve and remove the highest value card in the hand
      *

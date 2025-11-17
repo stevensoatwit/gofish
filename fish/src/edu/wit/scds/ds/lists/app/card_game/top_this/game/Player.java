@@ -42,6 +42,7 @@ import edu.wit.scds.ds.lists.app.card_game.standard_cards.pile.Pile ;
 import edu.wit.scds.ds.lists.app.card_game.top_this.pile.Hand ;
 import edu.wit.scds.ds.lists.app.card_game.top_this.pile.Meld ;
 import edu.wit.scds.ds.lists.app.card_game.top_this.pile.Stock ;
+import edu.wit.scds.ds.lists.app.card_game.universal_base.card.UniversalBaseCard ;
 import edu.wit.scds.ds.lists.app.card_game.universal_base.support.NoCardsException ;
 
 import java.io.File ;
@@ -108,6 +109,61 @@ public class Player
     /*
      * public methods
      */
+    
+    /**
+     * Checks for pairs, returns the first one or null
+     * @return null if no pairs, the first found paired card if there is one
+     */
+    public UniversalBaseCard hasPairs() {
+        // Setup a catalogue of card values
+        ArrayList<Integer> catalogue = new ArrayList<>();
+        // Iterate over cards
+        for(UniversalBaseCard card : hand ) {
+            System.out.println(card.getFaceUpText());
+            // Get this cards value
+            int thisCardVal = getUniCardRank(card);
+            // Check if its already in catalogue
+            if(catalogue.contains(thisCardVal)) {
+                return card; // This hand has pairs!
+            }
+            // Add this card to catalogue
+            catalogue.add(thisCardVal);
+        }
+        return null;
+    }
+    
+    /**
+     * Removes and returns the first card of a rank, null if no matches
+     * @return null if no cards of rank, the first found card if there is one or more
+     */
+    public UniversalBaseCard popFirstOfRank(int uniRank) {
+        // Iterate over cards
+        for(UniversalBaseCard card : hand ) {
+            System.out.println(card.getFaceUpText());
+            // Get this cards value
+            int thisCardVal = getUniCardRank(card);
+            // Check if it matches
+            if(thisCardVal == uniRank) {
+                return hand.removeCard(card); // This hand has pairs!
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * UniversalBaseCards dont have rank, this interprets a numeric value from the faceuptext
+     * @return Card rank value
+     */
+    public int getUniCardRank(UniversalBaseCard card) {
+        int value = 0;
+        String faceText = card.getFaceUpText();
+        faceText = faceText.substring(0, faceText.length() - 1);
+        for(char c : faceText.toCharArray()) {
+            value += (int)c;
+        }
+        
+        return value;
+    }
 
 
     /**
