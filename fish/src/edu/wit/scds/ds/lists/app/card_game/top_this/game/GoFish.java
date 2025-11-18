@@ -229,8 +229,10 @@ public class GoFish
 
     private void doTurns(Scanner input) {
         do {
+        int index = 0;
         for(Player player: this.players) {
-            takeTurn( player, input ) ;
+            takeTurn( player, input, index ) ;
+            index++ ;
         }
         
         this.roundNumber++ ;
@@ -297,7 +299,7 @@ public class GoFish
         getCardsFromDeck() ;
         
         // shuffle the cards
-        //this.stock.shuffle() ;
+        this.stock.shuffle() ;
 
         }   // end configureCards()
     
@@ -512,40 +514,56 @@ public class GoFish
 
         }   // end promptForLine()
     
-    private void takeTurn(Player player, Scanner input) {
-    
-        if(player.getHandSize() > 0) {
-            while( player.hasPairs() != null) {
-                player.makePair(player.hasPairs());
-                this.totalNumPairs++ ;
+    private void takeTurn(Player player, Scanner input, int index) {
+        
+        System.out.println( player.name + "'s turn:");
+        int check = -1;
+        do {
+            check = 0;
+            if(player.getHandSize() > 0) {
+//                while( player.hasPairs() != null) {
+//                    player.makePair(player.hasPairs());
+//                    this.totalNumPairs++ ;
+//                } // end while
+            
+            System.out.println( "Current hand: " + player.revealHand() );
+            
+            int target = -1;
+            
+            while(target < 0 || target > this.numberOfPlayers - 1 || target == index) {
+            
+                System.out.printf("Select player to target (1-" + this.numberOfPlayers + "): ");
+                target = input.nextInt() - 1;
+                
+                if (target < 0 || target > this.numberOfPlayers || target == index) {
+                    System.out.println("Error, invalid target.");
+                } // end if
+                
             } // end while
             
-            System.out.println( player.revealHand() );
+            int rank = -1;
             
-            System.out.printf("Select player to target (1-" + this.numberOfPlayers + "): ");
-            int target = input.nextInt() - 1;
+            while( rank < 1 || rank > 13 || ! player.hasCardOfRank(rank) ) {
             
-            if(target < 0 || target > this.numberOfPlayers) {
-                System.out.println("Error, target selection outside range.");
-                takeTurn(player, input);
-            } // end if
-            
-            System.out.printf("Select rank (that you have) to seek (1 - 13): ");
-            int rank = input.nextInt();
-            
-            if(rank < 1 || rank > 13) {
-                System.out.println("Error, rank selection outside range.");
-                takeTurn(player, input);
-            } else if ( ! player.hasCardOfRank(rank)) {
-                System.out.println("Error, card not in your hand.");
-                takeTurn(player, input);
-            } // end if-else
+                System.out.printf("Select rank (that you have) to seek (1 - 13): ");
+                rank = input.nextInt();
+                
+                if(rank < 1 || rank > 13) {
+                    System.out.println("Error, rank selection outside range.");
+                
+                } else if ( ! player.hasCardOfRank(rank)) {
+                    System.out.println("Error, card not in your hand.");
+                
+                } // end if-else
+                
+            } // end while
+         
             
             if( this.players.get( target ).hasCardOfRank( rank ) ) {
             
                 player.dealtACard( this.players.get( target ).popFirstOfRank( rank ) );
                 System.out.println("Card aquired from target");
-                takeTurn(player, input);
+                check++;
                 
             } else if ( ! this.stock.isEmpty() ){
             
@@ -555,7 +573,7 @@ public class GoFish
                 
                 if( Player.getUniCardRank( dealt ) == rank ) {
                     System.out.println("Card aquired from deck");
-                    takeTurn(player, input);
+                    check++;
                 } // end if
                 
             } else {
@@ -570,6 +588,8 @@ public class GoFish
             player.makePair(player.hasPairs());
             this.totalNumPairs++ ;
         } // end while
+        
+        } while (check >= 1);
         
         System.out.println("Turn over.");
         

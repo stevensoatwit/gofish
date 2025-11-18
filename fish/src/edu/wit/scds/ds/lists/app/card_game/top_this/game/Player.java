@@ -214,9 +214,21 @@ public class Player
     public static int getUniCardRank(UniversalBaseCard card) {
         int value = 0;
         String faceText = card.getFaceUpText();
-        faceText = faceText.substring(0, faceText.length() - 1);
-        for(char c : faceText.toCharArray()) {
-            value += (int) c;
+        char c = faceText.charAt(0);
+        switch (c) {
+        case 'A' -> value = 1;
+        case '2' -> value = 2;
+        case '3' -> value = 3;
+        case '4' -> value = 4;
+        case '5' -> value = 5;
+        case '6' -> value = 6;
+        case '7' -> value = 7;
+        case '8' -> value = 8;
+        case '9' -> value = 9;
+        case '1' -> value = 10;
+        case 'J' -> value = 11;
+        case 'Q' -> value = 12;
+        case 'K' -> value = 13;
         }
         
         return value;
