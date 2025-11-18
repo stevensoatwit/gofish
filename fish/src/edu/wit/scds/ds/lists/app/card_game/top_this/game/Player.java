@@ -82,6 +82,7 @@ public class Player
     /** player's name */
     public final String name ;
 
+    private ArrayList<Integer> pairs ;
 
     /*
      * constructor(s)
@@ -103,12 +104,51 @@ public class Player
 
         this.melds = new ArrayList<>() ;
 
+        this.pairs = new ArrayList<>();
+        
         }	// end constructor
-
 
     /*
      * public methods
      */
+
+    /**
+     * 
+     * @return the number of cards in this hand
+     *
+     * @since 1.0
+     */
+    public int getHandSize() {
+        return this.hand.cardCount();
+    }
+    
+    /**
+     * 
+     * @return number of pairs the player has made
+     *
+     * @since 1.0
+     */
+    public int getNumPairs() {
+        return this.pairs.size();
+    }
+    
+    /**
+     * 
+     * @param rank rank you are seeking
+     * @return whether or not your hand has it
+     *
+     * @since 1.0
+     */
+    public boolean hasCardOfRank( int rank ) {
+        
+        for(UniversalBaseCard card: this.hand) {
+            if( Player.getUniCardRank( card ) == rank ) {
+                return true;
+            } // end if
+        } // end for
+        
+        return false;
+    }
     
     /**
      * Checks for pairs, returns the first one or null
@@ -118,7 +158,7 @@ public class Player
         // Setup a catalogue of card values
         ArrayList<Integer> catalogue = new ArrayList<>();
         // Iterate over cards
-        for(UniversalBaseCard card : hand ) {
+        for(UniversalBaseCard card : this.hand ) {
             System.out.println(card.getFaceUpText());
             // Get this cards value
             int thisCardVal = getUniCardRank(card);
@@ -133,7 +173,23 @@ public class Player
     }
     
     /**
+     * 
+     * @param card card to remove
+     *
+     * @since 1.0
+     */
+    public void makePair(UniversalBaseCard card) {
+        int rank = getUniCardRank(card);
+        this.pairs.add( rank );
+        this.popFirstOfRank( rank );
+        this.popFirstOfRank( rank );
+        System.out.println("Made pair on rank " + rank);
+        
+    }
+    
+    /**
      * Removes and returns the first card of a rank, null if no matches
+     * @param uniRank rank of the card
      * @return null if no cards of rank, the first found card if there is one or more
      */
     public UniversalBaseCard popFirstOfRank(int uniRank) {
@@ -152,14 +208,15 @@ public class Player
     
     /**
      * UniversalBaseCards dont have rank, this interprets a numeric value from the faceuptext
+     * @param card 
      * @return Card rank value
      */
-    public int getUniCardRank(UniversalBaseCard card) {
+    public static int getUniCardRank(UniversalBaseCard card) {
         int value = 0;
         String faceText = card.getFaceUpText();
         faceText = faceText.substring(0, faceText.length() - 1);
         for(char c : faceText.toCharArray()) {
-            value += (int)c;
+            value += (int) c;
         }
         
         return value;
@@ -173,6 +230,20 @@ public class Player
      *     the card we're dealt
      */
     public void dealtACard( final Card dealt )
+        {
+
+        this.hand.addToBottom( dealt ) ;
+        this.hand.sort() ;
+
+        }  // end dealtACard()
+    
+    /**
+     * Add a dealt card to our hand
+     *
+     * @param dealt
+     *     the card we're dealt
+     */
+    public void dealtACard( final UniversalBaseCard dealt )
         {
 
         this.hand.addToBottom( dealt ) ;

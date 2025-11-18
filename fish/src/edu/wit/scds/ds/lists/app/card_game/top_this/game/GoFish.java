@@ -120,7 +120,8 @@ public class GoFish
 
     private final List<Player> players ;
     private int numberOfPlayers ;
-
+    private int totalNumPairs ;
+    
     private int roundNumber ;
 
     private final Scanner scanner ;
@@ -154,12 +155,13 @@ public class GoFish
         this.numberOfPlayers = -1 ;
 
         this.roundNumber = 0 ;
+        this.totalNumPairs = 0;
 
         this.scanner = input ;
-
+        
         this.stock = new Stock() ;
 
-        this.pointPiles = new ArrayList<DiscardPile>() ;
+        this.pointPiles = new ArrayList<>() ;
 
         this.deck = new Deck() ;   // indexing is O(1)
 
@@ -181,18 +183,61 @@ public class GoFish
      */
     public static void main( final String[] args )
         {
-
+        
         try ( final Scanner input = new Scanner( System.in ) ; )
             {
                 final GoFish goFish = new GoFish( input );
                 
                 goFish.setup();
-                goFish.players.get(0).hasPairs();
-            
+                goFish.doTurns( input );
+                goFish.displayWinners();
+                
             }   // end try (input)
-
+            
+            
         }   // end main()
     
+    /**
+     * 
+     *
+     * @since 1.0
+     */
+    private void displayWinners()
+        {
+
+        ArrayList<Player> winners = new ArrayList<>();
+        winners.add( this.players.getFirst() );
+ 
+        for(Player player: this.players) {
+            if( player.getNumPairs() > winners.get( 0 ).getNumPairs() ) {
+                winners.clear();
+                winners.add( player );
+            } else if ( player.getNumPairs() == winners.get( 0 ).getNumPairs() ) {
+                winners.add( player );
+            } // end if-else
+
+        } // end for
+        StringBuilder wins = new StringBuilder("Game over, winner(s): ") ;
+        for(Player winner: winners) {
+            wins.append( winner.name );
+        }
+        System.out.println(wins);
+        
+
+        }
+
+
+    private void doTurns(Scanner input) {
+        do {
+        for(Player player: this.players) {
+            takeTurn( player, input ) ;
+        }
+        
+        this.roundNumber++ ;
+        
+    } while( this.totalNumPairs < 26 );
+        
+    } // end doTurns
     // Setup game
     private void setup() {
         // we're not set up yet but we're on our way
@@ -466,5 +511,68 @@ public class GoFish
         return response ;
 
         }   // end promptForLine()
+    
+    private void takeTurn(Player player, Scanner input) {
+    
+        if(player.getHandSize() > 0) {
+            while( player.hasPairs() != null) {
+                player.makePair(player.hasPairs());
+                this.totalNumPairs++ ;
+            } // end while
+            
+            System.out.println( player.revealHand() );
+            
+            System.out.printf("Select player to target (1-" + this.numberOfPlayers + "): ");
+            int target = input.nextInt() - 1;
+            
+            if(target < 0 || target > this.numberOfPlayers) {
+                System.out.println("Error, target selection outside range.");
+                takeTurn(player, input);
+            } // end if
+            
+            System.out.printf("Select rank (that you have) to seek (1 - 13): ");
+            int rank = input.nextInt();
+            
+            if(rank < 1 || rank > 13) {
+                System.out.println("Error, rank selection outside range.");
+                takeTurn(player, input);
+            } else if ( ! player.hasCardOfRank(rank)) {
+                System.out.println("Error, card not in your hand.");
+                takeTurn(player, input);
+            } // end if-else
+            
+            if( this.players.get( target ).hasCardOfRank( rank ) ) {
+            
+                player.dealtACard( this.players.get( target ).popFirstOfRank( rank ) );
+                System.out.println("Card aquired from target");
+                takeTurn(player, input);
+                
+            } else if ( ! this.stock.isEmpty() ){
+            
+                System.out.println("Target did not have card, drawing a new one.");
+                final Card dealt = this.stock.drawTopCard().hide() ;
+                player.dealtACard( dealt ) ;
+                
+                if( Player.getUniCardRank( dealt ) == rank ) {
+                    System.out.println("Card aquired from deck");
+                    takeTurn(player, input);
+                } // end if
+                
+            } else {
+                System.out.println("No remaining cards to draw.");
+            } // end if-else
+            
+        } else {
+            System.out.println("No cards left in your hand.");
+        } // end if-else
+        
+        while( player.hasPairs() != null) {
+            player.makePair(player.hasPairs());
+            this.totalNumPairs++ ;
+        } // end while
+        
+        System.out.println("Turn over.");
+        
+    } // end takeTurn()
     
     }   // end class TopThis
