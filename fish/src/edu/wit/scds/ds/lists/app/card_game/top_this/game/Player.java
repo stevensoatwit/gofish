@@ -159,7 +159,6 @@ public class Player
         ArrayList<Integer> catalogue = new ArrayList<>();
         // Iterate over cards
         for(UniversalBaseCard card : this.hand ) {
-            System.out.println(card.getFaceUpText());
             // Get this cards value
             int thisCardVal = getUniCardRank(card);
             // Check if its already in catalogue
@@ -557,5 +556,6 @@ public class Player
             }
 
         }	// end main()
+
 
     }	// end class Player
