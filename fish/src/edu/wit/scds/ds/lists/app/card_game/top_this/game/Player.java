@@ -194,7 +194,6 @@ public class Player
     public UniversalBaseCard popFirstOfRank(int uniRank) {
         // Iterate over cards
         for(UniversalBaseCard card : hand ) {
-            System.out.println(card.getFaceUpText());
             // Get this cards value
             int thisCardVal = getUniCardRank(card);
             // Check if it matches
@@ -559,3 +558,4 @@ public class Player
 
 
     }	// end class Player
+
